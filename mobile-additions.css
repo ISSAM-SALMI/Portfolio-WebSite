@@ -1,0 +1,150 @@
+/* Additional Mobile Optimizations */
+
+/* Mobile landscape optimization */
+@media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
+    .header {
+        padding: 40px 0 30px 0 !important;
+    }
+    
+    .header-content {
+        flex-direction: row !important;
+        gap: 20px !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .profile-section {
+        order: 1 !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .profile-wrapper {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    
+    .header-info {
+        order: 2 !important;
+        flex: 1 !important;
+        text-align: left !important;
+    }
+    
+    .text-content {
+        text-align: left !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .main-title {
+        font-size: 1.8rem !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .role-title {
+        font-size: 1.1rem !important;
+    }
+    
+    .header-description {
+        font-size: 0.85rem !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .contact-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        margin: 10px 0 !important;
+    }
+    
+    .header-actions {
+        flex-direction: row !important;
+        gap: 10px !important;
+        margin-top: 10px !important;
+    }
+    
+    .cta-button {
+        flex: 1 !important;
+        font-size: 0.8rem !important;
+        padding: 10px 15px !important;
+    }
+}
+
+/* Ultra small screens (below 375px) */
+@media (max-width: 374px) {
+    .container {
+        padding: 0 8px !important;
+    }
+    
+    .header {
+        padding: 60px 0 40px 0 !important;
+    }
+    
+    .profile-wrapper {
+        width: 90px !important;
+        height: 90px !important;
+    }
+    
+    .ring-outer { 
+        width: 90px !important; 
+        height: 90px !important; 
+    }
+    
+    .ring-middle { 
+        width: 75px !important; 
+        height: 75px !important; 
+    }
+    
+    .ring-inner { 
+        width: 60px !important; 
+        height: 60px !important; 
+    }
+    
+    .profile-image {
+        width: 55px !important;
+        height: 55px !important;
+    }
+    
+    .main-title {
+        font-size: clamp(1.4rem, 7vw, 1.8rem) !important;
+    }
+    
+    .role-title {
+        font-size: clamp(0.9rem, 4vw, 1.1rem) !important;
+    }
+    
+    .header-description {
+        font-size: 0.8rem !important;
+    }
+    
+    .contact-grid {
+        max-width: 250px !important;
+        gap: 6px !important;
+    }
+    
+    .contact-card {
+        padding: 8px 10px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .header-actions {
+        max-width: 240px !important;
+        gap: 8px !important;
+    }
+    
+    .cta-button {
+        padding: 10px 16px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .language-item {
+        padding: 12px 14px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .language-name {
+        font-size: 0.95rem !important;
+    }
+    
+    .language-level {
+        font-size: 0.75rem !important;
+        padding: 2px 8px !important;
+    }
+}
