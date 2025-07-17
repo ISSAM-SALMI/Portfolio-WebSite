@@ -195,7 +195,6 @@ This project is open source and available under the [MIT License](LICENSE).
 - 💼 **LinkedIn**: [linkedin.com/in/issamsalmi](https://linkedin.com/in/issamsalmi)
 - 🐙 **GitHub**: [github.com/ISSAM-SALMI](https://github.com/ISSAM-SALMI)
 - 📧 **Email**: issamsalmi55@gmail.com
-- 📱 **Phone**: +212 669 081 511
 
 ---
 
