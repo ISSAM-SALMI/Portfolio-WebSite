@@ -2019,3 +2019,706 @@ class ModernNavbar {
 document.addEventListener('DOMContentLoaded', function() {
     new ModernNavbar();
 });
+
+// ========================================
+// CHAT INTERFACE FUNCTIONALITY
+// ========================================
+
+class ChatInterface {
+    constructor() {
+        // Configuration OpenRouter basée sur votre testAPI.py
+        this.openRouterConfig = {
+            apiKey: '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',
+            baseUrl: 'https://openrouter.ai/api/v1',
+            model: 'meta-llama/llama-3.3-70b-instruct:free',
+            headers: {
+                'HTTP-Referer': 'https://github.com/ISSAM-SALMI/Portfolio-WebSite',
+                'X-Title': 'AssistantIA-Issam'
+            }
+        };
+        
+        // URL de fallback pour votre API Replit
+        this.apiUrl = 'https://9aa48d60-0dfc-48d8-bb54-68391c1021bc-00-1y68zguc1n1x0.spock.replit.dev/api/ask';
+        this.workingUrl = this.apiUrl;
+        this.isOpen = false;
+        this.isTyping = false;
+        this.connectionStatus = 'unknown'; // unknown, online, offline, testing
+        
+        // Contenu du CV d'Issam pour le contexte (basé sur votre testAPI.py)
+        this.cvContext = `ISSAM SALMI
+Étudiant en ingénierie Big Data
+📧 : issamsalmi55@gmail.com | 📞 : +212 669081511 | 🔗 LinkedIn : https://www.linkedin.com/in/issamsalmi | 💻 GitHub : https://github.com/ISSAM-SALMI
+
+Passionné par l'ingénierie des données et l'intelligence artificielle, je me spécialise dans la création de workflows ETL efficaces,
+la conception de pipelines de données robustes, et le travail avec les grands modèles de langage (LLMs).
+Dévoué à la résolution de problèmes complexes et au développement de solutions innovantes basées sur les données.
+
+SKILLS
+• Languages: Python, Java, SQL
+• Pipelines: Airflow, Dagster, Talend, Pentaho, ETL
+• Big Data: Hadoop, Spark, Kafka, Hive
+• Databases: PostgreSQL, MySQL, MongoDB, Hbase, Redis
+• Cloud: AWS
+• OS: Linux, Windows Server
+• Version Control: Git, GitHub
+• Viz: Power BI, Tableau, Matplotlib
+• LLM: Fine-tuning, Embeddings, RAG
+• Containers: Docker, Kubernetes
+
+SOFT SKILLS
+• Collaboration et esprit critique
+• Adaptabilité
+• Travail d'équipe et communication
+
+CERTIFICATS
+• Oracle Cloud Infrastructure 2024 Generative AI Certified Professional – Oracle
+• AWS Cloud Quest: Cloud Practitioner – Amazon Web Services
+• Machine Learning Specialization – DeepLearning.AI
+• IBM Data Science – IBM
+• Associate Data Engineer in SQL – DataCamp
+
+BÉNÉVOLAT
+• Président & Responsable – Google Developer Groups, sur le campus (2024 - En cours)
+• Responsable IA – Google Developer Student Clubs (2023)
+
+LANGUES
+• Français : Maîtrise professionnelle
+• Anglais : Bonne maîtrise
+• Arabe : Langue maternelle
+
+ÉDUCATION
+Cycle d'ingénierie en Systèmes d'Information et Big Data – École Nationale des Sciences Appliquées
+Sept. 2021 – En cours | Berrechid, Maroc
+
+Baccalauréat – Lycée Ibno Yassine
+Sept. 2019 – Juin 2020 | Sidi Yahia, Maroc
+
+EXPÉRIENCE
+Stagiaire Data Engineer – Finea CDG (Août 2024 – Septembre 2024 | Présentiel)
+• Développement de processus ETL avancés et de pipelines de données pour optimiser le flux et améliorer l'efficacité.
+• Visualisation et présentation des insights dans Power BI pour soutenir la prise de décisions basée sur les données.
+• Technologies : Talend, Pentaho, Python, Power BI, Linux, PostgreSQL, SQL
+
+Développeur – Projet d'école privée (Juin 2022 – Juillet 2022)
+• Conception d'une application de bureau en Python pour la gestion des opérations scolaires.
+• Intégration d'opérations OLAP pour permettre un suivi et un reporting avancés.
+• Technologies : PyQt5, Python, SQL
+
+PROJETS
+Pipeline de Données – Architecture Cloud
+• Conception d'un pipeline de données avec Airflow, Celery et Postgres pour gérer l'ingestion, la transformation et le stockage cloud de données Reddit.
+• Technologies : Apache Airflow, AWS Glue, Amazon Athena, Redshift, PostgreSQL, Celery, Python
+
+Prédiction des Prix de Voitures d'Occasion – Marché Européen
+• Développement d'un pipeline MLOps complet pour prédire les prix des voitures d'occasion, depuis le web scraping jusqu'au traitement automatisé et au réentraînement du modèle.
+• Technologies : Airflow, Docker, Python, MongoDB, Web Scraping, Machine Learning, Linux
+
+Pipeline de Données – Analyse de Produits Affiliés
+• Création d'un pipeline de données pour collecter automatiquement les données de produits affiliés et analyser leur performance avec Airflow, Selenium et PostgreSQL.
+• Technologies : PostgreSQL, Power BI, Docker, Airflow, Selenium, Python`;
+        
+        this.initElements();
+        this.bindEvents();
+        this.hideNotification();
+        this.testConnection(); // Tester la connexion avec le bon endpoint
+    }
+
+    async testConnection() {
+        try {
+            console.log('🔍 Test de connexion avec API Replit (CORS-friendly)');
+            this.connectionStatus = 'testing';
+            this.updateConnectionIndicator('testing');
+
+            // Utiliser uniquement l'API Replit qui peut communiquer avec OpenRouter côté serveur
+            // Le navigateur ne peut pas faire d'appels directs à OpenRouter à cause de CORS
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: "Donne moi le numéro de téléphone d'Issam et aussi email et link of linkedin ?",
+                    system_prompt: `Tu es un assistant intelligent qui répond uniquement en te basant sur ce CV :\n${this.cvContext}`,
+                    cv_context: this.cvContext,
+                    // Ajouter les paramètres OpenRouter pour que votre API les utilise
+                    openrouter_config: {
+                        model: this.openRouterConfig.model,
+                        api_key: this.openRouterConfig.apiKey,
+                        base_url: this.openRouterConfig.baseUrl
+                    }
+                }),
+                signal: AbortSignal.timeout(15000)
+            });
+
+            console.log('📡 Statut API Replit:', response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ API Replit connectée:', data);
+                
+                if (data.success !== false && (data.answer || data.response)) {
+                    this.connectionStatus = 'online';
+                    this.updateConnectionIndicator('online');
+                    console.log('✅ API Replit fonctionnelle avec OpenRouter backend');
+                    return true;
+                }
+            }
+            
+            throw new Error(`API Replit HTTP ${response.status}: ${response.statusText}`);
+
+        } catch (error) {
+            console.error('❌ Erreur de connexion:', error.message);
+            this.connectionStatus = 'offline';
+            this.updateConnectionIndicator('offline');
+            
+            setTimeout(() => {
+                this.addSystemMessage('⚠️ Connexion à l\'API en cours... Cliquez sur "🔄 Tester la connexion" si le problème persiste.');
+            }, 1000);
+            
+            return false;
+        }
+    }
+
+    updateConnectionIndicator(status) {
+        let indicator = document.getElementById('connectionIndicator');
+        
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'connectionIndicator';
+            this.chatButton.style.position = 'relative';
+            this.chatButton.appendChild(indicator);
+        }
+
+        // Supprimer les anciennes classes
+        indicator.className = '';
+        
+        switch (status) {
+            case 'online':
+                indicator.className = 'connection-online';
+                indicator.title = 'API connectée';
+                break;
+            case 'offline':
+                indicator.className = 'connection-offline';
+                indicator.title = 'API déconnectée';
+                break;
+            case 'testing':
+                indicator.className = 'connection-testing';
+                indicator.title = 'Test de connexion...';
+                break;
+            default:
+                indicator.className = 'connection-offline';
+                indicator.title = 'Statut inconnu';
+        }
+    }
+
+    addSystemMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message system-message';
+        messageDiv.style.cssText = `
+            text-align: center;
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #3B82F6;
+        `;
+        
+        messageDiv.textContent = message;
+        this.chatMessages.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    initElements() {
+        this.chatButton = document.getElementById('chatButton');
+        this.chatWindow = document.getElementById('chatWindow');
+        this.chatClose = document.getElementById('chatClose');
+        this.chatInput = document.getElementById('chatInput');
+        this.chatSend = document.getElementById('chatSend');
+        this.chatMessages = document.getElementById('chatMessages');
+        this.chatTyping = document.getElementById('chatTyping');
+        this.chatNotification = document.getElementById('chatNotification');
+    }
+
+    bindEvents() {
+        // Ouvrir/fermer le chat
+        this.chatButton.addEventListener('click', () => this.toggleChat());
+        this.chatClose.addEventListener('click', () => this.closeChat());
+        
+        // Envoyer un message
+        this.chatSend.addEventListener('click', () => this.sendMessage());
+        
+        // Envoyer avec Enter
+        this.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
+        });
+
+        // Auto-resize input
+        this.chatInput.addEventListener('input', () => {
+            this.updateSendButton();
+        });
+
+        // Fermer en cliquant à l'extérieur
+        document.addEventListener('click', (e) => {
+            if (this.isOpen && !e.target.closest('.chat-container')) {
+                this.closeChat();
+            }
+        });
+    }
+
+    toggleChat() {
+        if (this.isOpen) {
+            this.closeChat();
+        } else {
+            this.openChat();
+        }
+    }
+
+    openChat() {
+        this.isOpen = true;
+        this.chatWindow.classList.add('active');
+        this.chatInput.focus();
+        this.hideNotification();
+        
+        // Animation de l'icône
+        this.chatButton.style.transform = 'rotate(180deg)';
+        
+        // Retester la connexion si elle était hors ligne
+        if (this.connectionStatus === 'offline') {
+            this.testConnection();
+        }
+
+        // Ajouter un message de bienvenue si c'est la première ouverture
+        if (this.chatMessages.children.length === 0) {
+            setTimeout(() => {
+                this.addMessage('👋 Bonjour ! Je suis l\'assistant IA d\'**Issam SALMI**, étudiant en ingénierie Big Data.\n\n💼 Posez-moi vos questions sur :\n• Son **expérience professionnelle** et ses projets\n• Ses **compétences techniques** (Python, SQL, AWS, etc.)\n• Ses **certifications** (Oracle AI, AWS, Machine Learning)\n• Ses **coordonnées** et informations de contact\n• Son **parcours académique** et bénévolat\n\n🚀 Essayez par exemple : *"Quelles sont les compétences techniques d\'Issam ?"* ou *"Comment puis-je contacter Issam ?"*', 'bot');
+            }, 500);
+        }
+        
+        setTimeout(() => {
+            this.scrollToBottom();
+        }, 300);
+    }
+
+    closeChat() {
+        this.isOpen = false;
+        this.chatWindow.classList.remove('active');
+        
+        // Restaurer l'icône
+        this.chatButton.style.transform = 'rotate(0deg)';
+    }
+
+    async sendMessage() {
+        const message = this.chatInput.value.trim();
+        if (!message || this.isTyping) return;
+
+        // Ajouter le message de l'utilisateur
+        this.addMessage(message, 'user');
+        this.chatInput.value = '';
+        this.updateSendButton();
+        
+        // Afficher l'indicateur de frappe
+        this.showTyping();
+
+        try {
+            console.log('📤 Envoi vers API Replit avec configuration OpenRouter');
+            console.log('📝 Message:', message);
+
+            // Envoyer à votre API Replit qui utilise OpenRouter côté serveur
+            // Ceci évite les problèmes CORS du navigateur
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: message,
+                    system_prompt: `Tu es un assistant intelligent qui répond uniquement en te basant sur ce CV :\n${this.cvContext}`,
+                    cv_context: this.cvContext,
+                    user_question: message,
+                    // Passer la configuration OpenRouter à votre API
+                    openrouter_config: {
+                        model: this.openRouterConfig.model,
+                        api_key: this.openRouterConfig.apiKey,
+                        base_url: this.openRouterConfig.baseUrl,
+                        headers: this.openRouterConfig.headers
+                    }
+                }),
+                signal: AbortSignal.timeout(30000)
+            });
+
+            console.log('📡 Statut de la réponse:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Erreur API:', errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('📦 Données reçues:', data);
+            
+            // Simuler un délai de réponse réaliste
+            setTimeout(() => {
+                this.hideTyping();
+                
+                if (data.success && data.answer) {
+                    this.addMessageWithTyping(data.answer, 'bot');
+                } else if (data.answer) {
+                    this.addMessageWithTyping(data.answer, 'bot');
+                } else if (data.response) {
+                    this.addMessageWithTyping(data.response, 'bot');
+                } else if (data.success === false) {
+                    const errorMsg = data.message || data.error || 'Erreur inconnue de l\'API';
+                    this.addMessage(`❌ Erreur: ${errorMsg}`, 'bot', true);
+                } else {
+                    console.warn('⚠️ Format de réponse inattendu:', data);
+                    this.addMessage('⚠️ Réponse reçue mais format inattendu. Vérifiez votre API Replit.', 'bot', true);
+                }
+                
+                // Marquer la connexion comme fonctionnelle si succès
+                if (data.success !== false && (data.answer || data.response)) {
+                    if (this.connectionStatus !== 'online') {
+                        this.connectionStatus = 'online';
+                        this.updateConnectionIndicator('online');
+                    }
+                }
+            }, 800 + Math.random() * 400);
+
+        } catch (error) {
+            console.error('💥 Erreur de chat:', error);
+            
+            setTimeout(() => {
+                this.hideTyping();
+                
+                let errorMessage = 'Désolé, une erreur s\'est produite. ';
+                
+                if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
+                    errorMessage += 'La requête a pris trop de temps (>30s). Votre API Replit est peut-être surchargée.';
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage += 'Impossible de joindre l\'API Replit. Vérifiez que votre serveur est démarré.';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage += 'Problème CORS. Votre API Replit doit accepter les requêtes depuis ce domaine.';
+                } else if (error.message.includes('HTTP 405')) {
+                    errorMessage += 'Méthode non autorisée. Vérifiez que l\'endpoint /api/ask accepte POST.';
+                } else if (error.message.includes('HTTP 404')) {
+                    errorMessage += 'API non trouvée. Vérifiez l\'URL de votre Replit.';
+                } else if (error.message.includes('HTTP 500')) {
+                    errorMessage += 'Erreur serveur. Vérifiez les logs de votre API Replit.';
+                } else {
+                    errorMessage += `Détails: ${error.message}`;
+                }
+                
+                this.addMessage(errorMessage, 'bot', true);
+                this.connectionStatus = 'offline';
+                this.updateConnectionIndicator('offline');
+            }, 500);
+        }
+    }
+
+    // Méthode de fallback avec votre API Replit
+    addMessage(text, sender, isError = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        if (sender === 'system') {
+            messageDiv.className = 'message system-message';
+            messageDiv.textContent = text;
+            this.chatMessages.appendChild(messageDiv);
+            this.scrollToBottom();
+            return;
+        }
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        avatarDiv.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = `message-content ${isError ? 'error-message' : ''}`;
+        
+        // Formater le texte pour les réponses de l'IA (comme ChatGPT)
+        if (sender === 'bot' && !isError) {
+            const formattedDiv = this.formatAIResponse(text);
+            contentDiv.appendChild(formattedDiv);
+        } else {
+            const textP = document.createElement('p');
+            textP.textContent = text;
+            contentDiv.appendChild(textP);
+        }
+        
+        // Ajouter un bouton de reconnexion pour les erreurs de connexion
+        if (isError && (text.includes('Impossible de joindre') || text.includes('Endpoint') || text.includes('connexion'))) {
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-button';
+            retryBtn.textContent = '🔄 Tester la connexion';
+            
+            retryBtn.onclick = () => {
+                retryBtn.textContent = '⏳ Test en cours...';
+                retryBtn.disabled = true;
+                
+                this.testConnection().then(() => {
+                    if (this.connectionStatus === 'online') {
+                        retryBtn.textContent = '✅ Connexion OK !';
+                        setTimeout(() => {
+                            retryBtn.style.display = 'none';
+                        }, 2000);
+                    } else {
+                        retryBtn.textContent = '❌ Échec de connexion';
+                        setTimeout(() => {
+                            retryBtn.textContent = '🔄 Réessayer';
+                            retryBtn.disabled = false;
+                        }, 3000);
+                    }
+                });
+            };
+            
+            contentDiv.appendChild(retryBtn);
+        }
+        
+        // Ajouter des instructions spécifiques pour /api/ask
+        if (isError && text.includes('Endpoint /api/ask non trouvé')) {
+            const instructionsP = document.createElement('p');
+            instructionsP.style.cssText = 'font-size: 0.8rem; margin-top: 8px; opacity: 0.8; line-height: 1.4; background: rgba(59, 130, 246, 0.1); padding: 8px; border-radius: 8px;';
+            instructionsP.innerHTML = `
+                <strong>💡 Vérifiez votre API Replit :</strong><br>
+                • L'endpoint doit être <code>/api/ask</code><br>
+                • Accepter les requêtes POST avec <code>{"question": "..."}</code><br>
+                • Retourner <code>{"success": true, "answer": "..."}</code>
+            `;
+            contentDiv.appendChild(instructionsP);
+        }
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        timeSpan.textContent = this.getCurrentTime();
+        contentDiv.appendChild(timeSpan);
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(contentDiv);
+        
+        this.chatMessages.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    addMessageWithTyping(text, sender) {
+        // Créer le message immédiatement
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        avatarDiv.innerHTML = '<i class="fas fa-robot"></i>';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        // Container pour le contenu avec effet de frappe
+        const typingContainer = document.createElement('div');
+        typingContainer.className = 'ai-response-content typing-container';
+        contentDiv.appendChild(typingContainer);
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        timeSpan.textContent = this.getCurrentTime();
+        contentDiv.appendChild(timeSpan);
+        
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(contentDiv);
+        
+        this.chatMessages.appendChild(messageDiv);
+        this.scrollToBottom();
+        
+        // Démarrer l'effet de frappe
+        this.typewriterEffect(typingContainer, text);
+    }
+
+    typewriterEffect(container, text, speed = 20) {
+        const words = text.split(' ');
+        let currentIndex = 0;
+        
+        const typeNextWord = () => {
+            if (currentIndex < words.length) {
+                const currentText = words.slice(0, currentIndex + 1).join(' ');
+                
+                // Reformater le texte à chaque étape
+                container.innerHTML = '';
+                const formattedContent = this.formatAIResponse(currentText);
+                container.appendChild(formattedContent);
+                
+                // Ajouter un curseur clignotant à la fin
+                const cursor = document.createElement('span');
+                cursor.className = 'typing-cursor';
+                cursor.textContent = '▋';
+                container.appendChild(cursor);
+                
+                this.scrollToBottom();
+                currentIndex++;
+                
+                // Vitesse variable selon la longueur du mot
+                const wordLength = words[currentIndex - 1]?.length || 3;
+                const delay = Math.max(speed, wordLength * 3);
+                
+                setTimeout(typeNextWord, delay);
+            } else {
+                // Supprimer le curseur à la fin
+                const cursor = container.querySelector('.typing-cursor');
+                if (cursor) {
+                    cursor.remove();
+                }
+                
+                // Ajouter un bouton de copie (optionnel)
+                this.addResponseActions(container.parentElement);
+            }
+        };
+        
+        typeNextWord();
+    }
+
+    addResponseActions(contentDiv) {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'ai-response-actions';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-response-btn';
+        copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier';
+        copyBtn.onclick = () => {
+            const textContent = contentDiv.querySelector('.ai-response-content').textContent;
+            navigator.clipboard.writeText(textContent).then(() => {
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier';
+                }, 2000);
+            });
+        };
+        
+        actionsDiv.appendChild(copyBtn);
+        contentDiv.appendChild(actionsDiv);
+    }
+
+    formatAIResponse(text) {
+        const container = document.createElement('div');
+        container.className = 'ai-response-content';
+        
+        // Diviser le texte en paragraphes
+        const paragraphs = text.split('\n\n').filter(p => p.trim());
+        
+        paragraphs.forEach(paragraph => {
+            const trimmedParagraph = paragraph.trim();
+            
+            // Vérifier si c'est une liste à puces
+            if (trimmedParagraph.includes('•') || trimmedParagraph.includes('-') || /^\d+\./.test(trimmedParagraph)) {
+                const listContainer = this.formatList(trimmedParagraph);
+                container.appendChild(listContainer);
+            } 
+            // Vérifier si c'est un titre (commence par ** ou ##)
+            else if (trimmedParagraph.startsWith('**') && trimmedParagraph.endsWith('**')) {
+                const title = document.createElement('h4');
+                title.className = 'ai-response-title';
+                title.textContent = trimmedParagraph.replace(/\*\*/g, '');
+                container.appendChild(title);
+            }
+            // Paragraphe normal
+            else {
+                const p = document.createElement('p');
+                p.className = 'ai-response-paragraph';
+                p.innerHTML = this.formatInlineText(trimmedParagraph);
+                container.appendChild(p);
+            }
+        });
+        
+        return container;
+    }
+
+    formatList(text) {
+        const listContainer = document.createElement('ul');
+        listContainer.className = 'ai-response-list';
+        
+        // Diviser par les puces ou tirets
+        const items = text.split(/(?=•)|(?=-)|\n/).filter(item => item.trim());
+        
+        items.forEach(item => {
+            const cleanItem = item.replace(/^[•\-\d+\.]\s*/, '').trim();
+            if (cleanItem) {
+                const li = document.createElement('li');
+                li.className = 'ai-response-list-item';
+                li.innerHTML = this.formatInlineText(cleanItem);
+                listContainer.appendChild(li);
+            }
+        });
+        
+        return listContainer;
+    }
+
+    formatInlineText(text) {
+        // Formater le texte en gras (**text**)
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // Formater le texte en italique (*text*)
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // Formater le code inline (`code`)
+        text = text.replace(/`(.*?)`/g, '<code class="inline-code">$1</code>');
+        
+        // Formater les liens [text](url)
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="ai-link">$1</a>');
+        
+        return text;
+    }
+
+    showTyping() {
+        this.isTyping = true;
+        this.chatTyping.style.display = 'flex';
+        this.chatSend.disabled = true;
+        this.scrollToBottom();
+    }
+
+    hideTyping() {
+        this.isTyping = false;
+        this.chatTyping.style.display = 'none';
+        this.chatSend.disabled = false;
+    }
+
+    updateSendButton() {
+        const hasText = this.chatInput.value.trim().length > 0;
+        this.chatSend.disabled = !hasText || this.isTyping;
+    }
+
+    scrollToBottom() {
+        setTimeout(() => {
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }, 100);
+    }
+
+    getCurrentTime() {
+        const now = new Date();
+        return now.toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+
+    showNotification() {
+        this.chatNotification.style.display = 'flex';
+    }
+
+    hideNotification() {
+        this.chatNotification.style.display = 'none';
+    }
+}
+
+// Initialiser le chat quand le DOM est chargé
+document.addEventListener('DOMContentLoaded', function() {
+    const chat = new ChatInterface();
+    
+    // Optionnel : afficher une notification après quelques secondes
+    setTimeout(() => {
+        if (!chat.isOpen) {
+            chat.showNotification();
+        }
+    }, 10000); // Afficher après 10 secondes
+});
